@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+    import { useState, useEffect, useMemo } from "react";
 
 const COLORS = {
   cream: "#F7F1E8",
@@ -152,8 +152,8 @@ export default function PofidooStore() {
   function addToCart(id) {
     setCart((c) => ({ ...c, [id]: (c[id] || 0) + 1 }));
     setCartOpen(true);
+    const p = PRODUCTS[id];
     if (typeof window.fbq === "function") {
-      const p = PRODUCTS[id];
       window.fbq("track", "AddToCart", {
         content_name: p.name,
         content_category: p.category,
@@ -161,6 +161,13 @@ export default function PofidooStore() {
         content_type: "product",
         value: prices[id] ? Number(prices[id]) : 0,
         currency: "TRY",
+      });
+    }
+    if (typeof window.gtag === "function") {
+      window.gtag("event", "add_to_cart", {
+        currency: "TRY",
+        value: prices[id] ? Number(prices[id]) : 0,
+        items: [{ item_name: p.name, item_category: p.category }],
       });
     }
   }
@@ -186,6 +193,12 @@ export default function PofidooStore() {
           value: subtotal,
           currency: "TRY",
           num_items: cartCount,
+        });
+      }
+      if (typeof window.gtag === "function") {
+        window.gtag("event", "generate_lead", {
+          currency: "TRY",
+          value: subtotal,
         });
       }
     }
@@ -481,6 +494,12 @@ export default function PofidooStore() {
                         num_items: cartCount,
                       });
                     }
+                    if (typeof window.gtag === "function") {
+                      window.gtag("event", "begin_checkout", {
+                        currency: "TRY",
+                        value: subtotal,
+                      });
+                    }
                   }}
                   style={{ width: "100%", background: COLORS.harbor, color: COLORS.cream, border: "none", borderRadius: 24, padding: "13px 0", fontSize: 14, fontWeight: 600, cursor: "pointer" }}
                 >
@@ -525,3 +544,5 @@ export default function PofidooStore() {
     </div>
   );
 }
+
+    
