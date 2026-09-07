@@ -152,6 +152,17 @@ export default function PofidooStore() {
   function addToCart(id) {
     setCart((c) => ({ ...c, [id]: (c[id] || 0) + 1 }));
     setCartOpen(true);
+    if (typeof window.fbq === "function") {
+      const p = PRODUCTS[id];
+      window.fbq("track", "AddToCart", {
+        content_name: p.name,
+        content_category: p.category,
+        content_ids: [String(id)],
+        content_type: "product",
+        value: prices[id] ? Number(prices[id]) : 0,
+        currency: "TRY",
+      });
+    }
   }
   function changeQty(id, delta) {
     setCart((c) => ({ ...c, [id]: Math.max(0, (c[id] || 0) + delta) }));
@@ -168,7 +179,16 @@ export default function PofidooStore() {
     if (!form.address.trim()) errs.address = "Teslimat adresi girin";
     if (!form.city.trim()) errs.city = "Şehir girin";
     setFormErrors(errs);
-    if (Object.keys(errs).length === 0) setOrderPlaced(true);
+    if (Object.keys(errs).length === 0) {
+      setOrderPlaced(true);
+      if (typeof window.fbq === "function") {
+        window.fbq("track", "Lead", {
+          value: subtotal,
+          currency: "TRY",
+          num_items: cartCount,
+        });
+      }
+    }
   }
 
   const inputStyle = {
@@ -451,7 +471,17 @@ export default function PofidooStore() {
                   <span>{money(subtotal) || "0,00 ₺"}</span>
                 </div>
                 <button
-                  onClick={() => { setCartOpen(false); setView("checkout"); }}
+                  onClick={() => {
+                    setCartOpen(false);
+                    setView("checkout");
+                    if (typeof window.fbq === "function") {
+                      window.fbq("track", "InitiateCheckout", {
+                        value: subtotal,
+                        currency: "TRY",
+                        num_items: cartCount,
+                      });
+                    }
+                  }}
                   style={{ width: "100%", background: COLORS.harbor, color: COLORS.cream, border: "none", borderRadius: 24, padding: "13px 0", fontSize: 14, fontWeight: 600, cursor: "pointer" }}
                 >
                   Ödemeye geç
