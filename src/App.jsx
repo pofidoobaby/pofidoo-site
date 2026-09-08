@@ -288,6 +288,10 @@ export default function PofidooStore() {
           .pf-feat-row{grid-template-columns:1fr}
           .pf-hero-grid{grid-template-columns:1fr}
           .pf-checkout-grid{grid-template-columns:1fr}
+          .pf-navlink{display:none}
+          .pf-header{padding:14px 16px !important}
+          .pf-member-btn{padding:8px 10px !important;font-size:11.5px !important}
+          .pf-nav{gap:10px !important}
         }
       `}</style>
 
@@ -295,11 +299,11 @@ export default function PofidooStore() {
         Bursa'dan tüm Türkiye'ye kargo &nbsp;·&nbsp; GOTS sertifikalı %100 organik pamuk
       </div>
 
-      <header style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "18px 40px", borderBottom: `1px solid ${COLORS.sand}`, position: "sticky", top: 0, background: COLORS.cream, zIndex: 20 }}>
-        <button onClick={() => setView("shop")} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}>
-          <Logo />
+      <header className="pf-header" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "18px 40px", borderBottom: `1px solid ${COLORS.sand}`, position: "sticky", top: 0, background: COLORS.cream, zIndex: 20 }}>
+        <button onClick={() => setView("shop")} style={{ background: "none", border: "none", cursor: "pointer", padding: 0, flexShrink: 0 }}>
+          <Logo size={28} />
         </button>
-        <nav style={{ display: "flex", alignItems: "center", gap: 32 }}>
+        <nav className="pf-nav" style={{ display: "flex", alignItems: "center", gap: 32 }}>
           <button className="pf-navlink" onClick={() => setView("shop")} style={{ background: "none", border: "none", fontFamily: "Poppins, sans-serif", fontSize: 14, color: COLORS.harbor, cursor: "pointer" }}>
             Koleksiyon
           </button>
@@ -309,21 +313,23 @@ export default function PofidooStore() {
             <button
               onClick={logoutMember}
               title="Çıkış yap"
-              style={{ background: "rgba(110,150,120,0.15)", border: `1px solid ${COLORS.sprout}`, color: COLORS.sprout, borderRadius: 20, padding: "8px 16px", fontFamily: "Poppins, sans-serif", fontSize: 13, fontWeight: 600, cursor: "pointer" }}
+              className="pf-member-btn"
+              style={{ background: "rgba(110,150,120,0.15)", border: `1px solid ${COLORS.sprout}`, color: COLORS.sprout, borderRadius: 20, padding: "8px 16px", fontFamily: "Poppins, sans-serif", fontSize: 13, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap" }}
             >
               Merhaba, {member.name.split(" ")[0]} 👋
             </button>
           ) : (
             <button
               onClick={() => setMemberModalOpen(true)}
-              style={{ background: "none", border: `1px solid ${COLORS.bloomDeep}`, color: COLORS.bloomDeep, borderRadius: 20, padding: "8px 16px", fontFamily: "Poppins, sans-serif", fontSize: 13, fontWeight: 600, cursor: "pointer" }}
+              className="pf-member-btn"
+              style={{ background: "none", border: `1px solid ${COLORS.bloomDeep}`, color: COLORS.bloomDeep, borderRadius: 20, padding: "8px 16px", fontFamily: "Poppins, sans-serif", fontSize: 13, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap" }}
             >
               Üye Ol · %5 İndirim
             </button>
           )}
           <button
             onClick={() => setCartOpen(true)}
-            style={{ position: "relative", background: COLORS.harbor, color: COLORS.cream, border: "none", borderRadius: 20, padding: "9px 20px", fontFamily: "Poppins, sans-serif", fontSize: 14, fontWeight: 500, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}
+            style={{ position: "relative", background: COLORS.harbor, color: COLORS.cream, border: "none", borderRadius: 20, padding: "9px 20px", fontFamily: "Poppins, sans-serif", fontSize: 14, fontWeight: 500, cursor: "pointer", display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}
           >
             Sepet
             <span style={{ background: COLORS.bloom, color: COLORS.harbor, borderRadius: 12, minWidth: 20, height: 20, fontSize: 12, display: "inline-flex", alignItems: "center", justifyContent: "center", fontWeight: 700 }}>
