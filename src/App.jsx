@@ -141,6 +141,39 @@ export default function PofidooStore() {
   const [formErrors, setFormErrors] = useState({});
   const [orderPlaced, setOrderPlaced] = useState(false);
 
+  const [member, setMember] = useState(null);
+  const [memberModalOpen, setMemberModalOpen] = useState(false);
+  const [memberForm, setMemberForm] = useState({ name: "", phone: "", email: "" });
+  const [memberErrors, setMemberErrors] = useState({});
+
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem("pofidoo_member");
+      if (saved) setMember(JSON.parse(saved));
+    } catch (e) {}
+  }, []);
+
+  function registerMember(e) {
+    e.preventDefault();
+    const errs = {};
+    if (!memberForm.name.trim()) errs.name = "Ad soyad girin";
+    if (!memberForm.phone.trim() || memberForm.phone.replace(/\D/g, "").length < 10) errs.phone = "Geçerli bir telefon girin";
+    setMemberErrors(errs);
+    if (Object.keys(errs).length > 0) return;
+    const code = "HOSGELDIN5-" + Math.random().toString(36).slice(2, 6).toUpperCase();
+    const newMember = { ...memberForm, code, joinedAt: new Date().toISOString() };
+    setMember(newMember);
+    try { window.localStorage.setItem("pofidoo_member", JSON.stringify(newMember)); } catch (e) {}
+    setMemberModalOpen(false);
+    if (typeof window.fbq === "function") window.fbq("track", "CompleteRegistration");
+    if (typeof window.gtag === "function") window.gtag("event", "sign_up", { method: "site_form" });
+  }
+
+  function logoutMember() {
+    setMember(null);
+    try { window.localStorage.removeItem("pofidoo_member"); } catch (e) {}
+  }
+
   const filtered = useMemo(
     () => (category === "Tümü" ? PRODUCTS : PRODUCTS.filter((p) => p.category === category)),
     [category]
@@ -154,6 +187,8 @@ export default function PofidooStore() {
   const cartCount = cartItems.reduce((s, i) => s + i.qty, 0);
   const missingPriceCount = cartItems.filter((i) => !i.price).length;
   const subtotal = cartItems.reduce((s, i) => s + (i.price ? Number(i.price) * i.qty : 0), 0);
+  const memberDiscount = member ? subtotal * 0.05 : 0;
+  const finalTotal = subtotal - memberDiscount;
 
   function addToCart(id) {
     setCart((c) => ({ ...c, [id]: (c[id] || 0) + 1 }));
@@ -196,7 +231,7 @@ export default function PofidooStore() {
       setOrderPlaced(true);
       if (typeof window.fbq === "function") {
         window.fbq("track", "Lead", {
-          value: subtotal,
+          value: finalTotal,
           currency: "TRY",
           num_items: cartCount,
         });
@@ -204,7 +239,7 @@ export default function PofidooStore() {
       if (typeof window.gtag === "function") {
         window.gtag("event", "generate_lead", {
           currency: "TRY",
-          value: subtotal,
+          value: finalTotal,
         });
       }
     }
@@ -268,6 +303,22 @@ export default function PofidooStore() {
           </button>
           <a className="pf-navlink" href="#oncikanlar" style={{ fontSize: 14, color: COLORS.harbor, textDecoration: "none" }}>Öne çıkanlar</a>
           <a className="pf-navlink" href="#hakkimizda" style={{ fontSize: 14, color: COLORS.harbor, textDecoration: "none" }}>Hakkımızda</a>
+          {member ? (
+            <button
+              onClick={logoutMember}
+              title="Çıkış yap"
+              style={{ background: "rgba(110,150,120,0.15)", border: `1px solid ${COLORS.sprout}`, color: COLORS.sprout, borderRadius: 20, padding: "8px 16px", fontFamily: "Poppins, sans-serif", fontSize: 13, fontWeight: 600, cursor: "pointer" }}
+            >
+              Merhaba, {member.name.split(" ")[0]} 👋
+            </button>
+          ) : (
+            <button
+              onClick={() => setMemberModalOpen(true)}
+              style={{ background: "none", border: `1px solid ${COLORS.bloomDeep}`, color: COLORS.bloomDeep, borderRadius: 20, padding: "8px 16px", fontFamily: "Poppins, sans-serif", fontSize: 13, fontWeight: 600, cursor: "pointer" }}
+            >
+              Üye Ol · %5 İndirim
+            </button>
+          )}
           <button
             onClick={() => setCartOpen(true)}
             style={{ position: "relative", background: COLORS.harbor, color: COLORS.cream, border: "none", borderRadius: 20, padding: "9px 20px", fontFamily: "Poppins, sans-serif", fontSize: 14, fontWeight: 500, cursor: "pointer", display: "flex", alignItems: "center", gap: 8 }}
@@ -542,9 +593,15 @@ export default function PofidooStore() {
                   </div>
                 </div>
               ))}
+              {member && subtotal > 0 && (
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: COLORS.sprout, marginTop: 4 }}>
+                  <span>Üye indirimi (%5)</span>
+                  <span>−{money(memberDiscount)}</span>
+                </div>
+              )}
               <div style={{ borderTop: `1px solid ${COLORS.sand}`, marginTop: 4, paddingTop: 12, display: "flex", justifyContent: "space-between", fontWeight: 700, color: COLORS.harbor, fontSize: 15 }}>
                 <span>Toplam</span>
-                <span>{money(subtotal) || "0,00 ₺"}</span>
+                <span>{money(finalTotal) || "0,00 ₺"}</span>
               </div>
               <div style={{ fontSize: 12, color: COLORS.harborLight, background: "rgba(242,167,157,0.18)", borderRadius: 8, padding: 12, marginTop: 14 }}>
                 Bu bir önizlemedir. Gerçek ödeme altyapısı bağlandığında bu adım canlı ödemeye dönüşecek.
@@ -568,6 +625,49 @@ export default function PofidooStore() {
             Alışverişe devam et
           </button>
         </section>
+      )}
+
+      {memberModalOpen && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(58,52,44,0.45)", zIndex: 40, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }} onClick={() => setMemberModalOpen(false)}>
+          <div style={{ width: 400, maxWidth: "100%", background: COLORS.cream, borderRadius: 16, padding: 28 }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
+              <h3 style={{ fontSize: 20, color: COLORS.harbor, margin: 0 }}>Üye Ol, %5 İndirim Kazan</h3>
+              <button onClick={() => setMemberModalOpen(false)} style={{ background: "none", border: "none", fontSize: 20, color: COLORS.harborLight, cursor: "pointer" }}>×</button>
+            </div>
+            <p style={{ fontSize: 13, color: COLORS.harborLight, marginBottom: 20 }}>
+              Üye olun, sepetinizde otomatik %5 indirim kazanın. Sadece bu cihazda geçerlidir.
+            </p>
+            <form onSubmit={registerMember} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              <div>
+                <input
+                  value={memberForm.name}
+                  onChange={(e) => setMemberForm({ ...memberForm, name: e.target.value })}
+                  placeholder="Ad soyad"
+                  style={{ width: "100%", padding: "11px 14px", borderRadius: 8, border: `1px solid ${COLORS.sand}`, background: "#fff", fontFamily: "Poppins, sans-serif", fontSize: 14, boxSizing: "border-box" }}
+                />
+                {memberErrors.name && <div style={{ color: "#B4453A", fontSize: 12, marginTop: 4 }}>{memberErrors.name}</div>}
+              </div>
+              <div>
+                <input
+                  value={memberForm.phone}
+                  onChange={(e) => setMemberForm({ ...memberForm, phone: e.target.value })}
+                  placeholder="Telefon (05xx xxx xx xx)"
+                  style={{ width: "100%", padding: "11px 14px", borderRadius: 8, border: `1px solid ${COLORS.sand}`, background: "#fff", fontFamily: "Poppins, sans-serif", fontSize: 14, boxSizing: "border-box" }}
+                />
+                {memberErrors.phone && <div style={{ color: "#B4453A", fontSize: 12, marginTop: 4 }}>{memberErrors.phone}</div>}
+              </div>
+              <input
+                value={memberForm.email}
+                onChange={(e) => setMemberForm({ ...memberForm, email: e.target.value })}
+                placeholder="E-posta (opsiyonel)"
+                style={{ width: "100%", padding: "11px 14px", borderRadius: 8, border: `1px solid ${COLORS.sand}`, background: "#fff", fontFamily: "Poppins, sans-serif", fontSize: 14, boxSizing: "border-box" }}
+              />
+              <button type="submit" style={{ background: COLORS.harbor, color: COLORS.cream, border: "none", borderRadius: 24, padding: "13px 0", fontSize: 14, fontWeight: 600, cursor: "pointer", marginTop: 6 }}>
+                Üye Ol
+              </button>
+            </form>
+          </div>
+        </div>
       )}
 
       {cartOpen && (
@@ -606,9 +706,15 @@ export default function PofidooStore() {
                     {missingPriceCount} üründe fiyat girilmedi, toplam eksik hesaplanıyor.
                   </div>
                 )}
+                {member && subtotal > 0 && (
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5, color: COLORS.sprout, marginBottom: 8 }}>
+                    <span>Üye indirimi (%5)</span>
+                    <span>−{money(memberDiscount)}</span>
+                  </div>
+                )}
                 <div style={{ display: "flex", justifyContent: "space-between", fontSize: 15, fontWeight: 600, color: COLORS.harbor, marginBottom: 14 }}>
                   <span>Ara toplam</span>
-                  <span>{money(subtotal) || "0,00 ₺"}</span>
+                  <span>{money(finalTotal) || "0,00 ₺"}</span>
                 </div>
                 <button
                   onClick={() => {
@@ -616,7 +722,7 @@ export default function PofidooStore() {
                     setView("checkout");
                     if (typeof window.fbq === "function") {
                       window.fbq("track", "InitiateCheckout", {
-                        value: subtotal,
+                        value: finalTotal,
                         currency: "TRY",
                         num_items: cartCount,
                       });
@@ -624,7 +730,7 @@ export default function PofidooStore() {
                     if (typeof window.gtag === "function") {
                       window.gtag("event", "begin_checkout", {
                         currency: "TRY",
-                        value: subtotal,
+                        value: finalTotal,
                       });
                     }
                   }}
