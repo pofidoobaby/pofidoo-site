@@ -233,6 +233,9 @@ export default function PofidooStore() {
         .pf-feat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
         .pf-hero-grid{display:grid;grid-template-columns:1.1fr 1fr;gap:48px}
         .pf-checkout-grid{display:grid;grid-template-columns:1.3fr 1fr;gap:32px;align-items:start}
+        .pf-marquee-track{display:flex;width:max-content;animation:pf-scroll 22s linear infinite}
+        @keyframes pf-scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+        .pf-step-num{font-size:13px;font-weight:700;color:${COLORS.bloomDeep};letter-spacing:0.05em}
         @media (max-width:760px){
           .pf-feat-row{grid-template-columns:1fr}
           .pf-hero-grid{grid-template-columns:1fr}
@@ -270,8 +273,11 @@ export default function PofidooStore() {
         <>
           <section className="pf-hero-grid" style={{ padding: "64px 40px 48px", alignItems: "center", maxWidth: 1180, margin: "0 auto" }}>
             <div>
+              <div style={{ display: "inline-block", background: COLORS.paper, border: `1px solid ${COLORS.sand}`, borderRadius: 20, padding: "6px 16px", fontSize: 12.5, color: COLORS.sprout, fontWeight: 600, marginBottom: 18 }}>
+                Yenidoğan & Bebek Giyim · Organik
+              </div>
               <h1 style={{ fontSize: 46, lineHeight: 1.14, fontWeight: 700, color: COLORS.harbor, margin: "0 0 18px" }}>
-                Yumuşacık başlangıçlar
+                Yumuşacık <span style={{ fontStyle: "italic", color: COLORS.bloomDeep }}>Başlangıçlar</span>
               </h1>
               <p style={{ fontSize: 16, lineHeight: 1.65, color: COLORS.harborLight, maxWidth: 400, margin: "0 0 24px" }}>
                 Yeni doğan ve bebek giyimde GOTS sertifikalı organik pamuk. Her parça, hassas ciltler düşünülerek seçildi ve elde kontrol edildi.
@@ -291,13 +297,44 @@ export default function PofidooStore() {
             </div>
           </section>
 
-          <section style={{ borderTop: `1px solid ${COLORS.sand}`, borderBottom: `1px solid ${COLORS.sand}`, padding: "36px 40px", maxWidth: 1180, margin: "0 auto" }}>
+          <div style={{ overflow: "hidden", borderTop: `1px solid ${COLORS.sand}`, borderBottom: `1px solid ${COLORS.sand}`, background: COLORS.paper, padding: "14px 0" }}>
+            <div className="pf-marquee-track">
+              {[0, 1].map((rep) => (
+                <div key={rep} style={{ display: "flex", flexShrink: 0 }}>
+                  {["GOTS Sertifikalı", "%100 Organik Pamuk", "Bursa Üretimi", "Elde Kontrol Edilmiş", "Hızlı Kargo", "Hassas Ciltler İçin"].map((t) => (
+                    <span key={t} style={{ display: "inline-flex", alignItems: "center", fontSize: 13.5, color: COLORS.harbor, fontWeight: 500, padding: "0 24px", whiteSpace: "nowrap" }}>
+                      {t} <span style={{ color: COLORS.bloom, marginLeft: 24 }}>✦</span>
+                    </span>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <section style={{ borderBottom: `1px solid ${COLORS.sand}`, padding: "36px 40px", maxWidth: 1180, margin: "0 auto" }}>
             <div className="pf-feat-row">
               {features.map((f) => (
                 <div key={f.title} style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   <Icon path={f.icon} color={COLORS.sprout} />
                   <div style={{ fontSize: 14, fontWeight: 600, color: COLORS.harbor }}>{f.title}</div>
                   <div style={{ fontSize: 12.5, color: COLORS.harborLight, lineHeight: 1.5 }}>{f.body}</div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section style={{ padding: "48px 40px", maxWidth: 1180, margin: "0 auto" }}>
+            <h2 style={{ fontSize: 24, color: COLORS.harbor, marginBottom: 32, textAlign: "center" }}>3 adımda kapına gelsin</h2>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 28 }}>
+              {[
+                { n: "01", title: "Ürünü Seç", body: "GOTS sertifikalı koleksiyondan sana uygun parçayı bul." },
+                { n: "02", title: "Sepete Ekle", body: "Beğendiklerini sepete ekle, bilgilerini gir." },
+                { n: "03", title: "Kapında Teslim Al", body: "Bursa'dan 1-2 iş günü içinde kargoya verilir." },
+              ].map((s) => (
+                <div key={s.n}>
+                  <div className="pf-step-num">{s.n}</div>
+                  <div style={{ fontSize: 17, fontWeight: 600, color: COLORS.harbor, margin: "6px 0" }}>{s.title}</div>
+                  <div style={{ fontSize: 13.5, color: COLORS.harborLight, lineHeight: 1.6 }}>{s.body}</div>
                 </div>
               ))}
             </div>
